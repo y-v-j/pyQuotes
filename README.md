@@ -29,7 +29,7 @@ A lightweight desktop widget for Linux that shows a greeting, the date and time,
 
 ### Works alongside pySysMon
 
-By default pyQuotes sits at the top-right of the screen, just left of the pySysMon system monitor, so the two never overlap:
+By default pyQuotes sits at the top-right of the screen, just left of the [pySysMon](https://github.com/y-v-j/pySysMon) system monitor, so the two never overlap:
 
 <p align="center">
   <img src="assets/screenshot-with-pysysmon.png" alt="pyQuotes next to the pySysMon system monitor" width="700">
