@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Name=pyQuotes
+Comment=Desktop widget with the time and a rotating literary quote
+Exec=sh -c '"$HOME/.local/share/pyquotes/launch.sh"'
+Icon=accessories-text-editor
+Terminal=false
+Categories=Utility;
+X-KDE-autostart-after=panel
+X-GNOME-Autostart-enabled=true

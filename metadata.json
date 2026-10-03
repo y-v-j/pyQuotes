@@ -1,0 +1,6 @@
+{
+  "name": "PyConky Desktop Widget",
+  "description": "A python-based desktop widget with window-pinning technique (undecorated + below/sticky/skip-taskbar/skip-pager) and crash-proof periodic timers.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

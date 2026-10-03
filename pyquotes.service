@@ -1,0 +1,13 @@
+[Unit]
+Description=pyQuotes desktop quote widget
+PartOf=graphical-session.target
+After=graphical-session.target
+
+[Service]
+Type=simple
+ExecStart=%h/.local/share/pyquotes/launch.sh
+Restart=on-failure
+RestartSec=3
+
+[Install]
+WantedBy=graphical-session.target

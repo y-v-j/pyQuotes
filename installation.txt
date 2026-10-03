@@ -1,0 +1,112 @@
+The Python files are available in this project and in the "Python Source & Config" tab in the web view (or you can copy/download them directly).
+
+Here is the step-by-step guide to install and run PyConky on your local Linux machine.
+Step 1: Install System Prerequisites
+
+PyConky requires Python 3, standard Tkinter, and x11-utils / xprop (which provides the EWMH window-pinning commands to keep it below active windows).
+Ubuntu / Debian / Linux Mint / Pop!_OS
+code Bash
+
+sudo apt update
+sudo apt install -y python3 python3-tk x11-utils xdotool
+
+Fedora / RHEL
+code Bash
+
+sudo dnf install -y python3 python3-tkinter xorg-x11-utils xdotool
+
+Arch Linux / Manjaro
+code Bash
+
+sudo pacman -S python xorg-xprop xdotool
+
+Step 2: Set Up Directory & Files
+
+Create a directory on your machine (e.g. ~/pyconky):
+code Bash
+
+mkdir -p ~/pyconky
+cd ~/pyconky
+
+You need two files in this folder: pyconky.py and quotes_data.py.
+
+    quotes_data.py
+    Create ~/pyconky/quotes_data.py with your quotes collection (or copy it from the repo / "Python Source & Config" tab in the UI).
+
+    pyconky.py
+    Create ~/pyconky/pyconky.py and make it executable:
+    code Bash
+
+    chmod +x pyconky.py
+
+Step 3: Run PyConky
+
+Launch it from your terminal:
+code Bash
+
+python3 pyconky.py
+
+    When first launched, PyConky will automatically create its default configuration at:
+    code Code
+
+    ~/.config/pyconky/config.json
+
+    Desktop Stacking: It immediately embeds onto the desktop background level beneath all active windows, terminals, and browsers.
+
+    Click Handling: Clicking the desktop or desktop background wallpaper will never minimize or hide the widget.
+
+    Crash-Proof Timers: Clock and quote rotation continue indefinitely via safe_after even if an invalid format or bad JSON edit occurs.
+
+Step 4: Controls & Customization
+
+    Right-Click Widget:
+
+        New quote: Instantly picks another literary quote.
+
+        Toggle lock: Unlocks the widget so you can left-click and drag it anywhere on your monitors. Position saves automatically.
+
+        Toggle margins: Toggles inner/outer padding.
+
+        Edit config file…: Opens ~/.config/pyconky/config.json in your editor. Live hot-reloads without needing to restart the app!
+
+        Quit: Exits the widget.
+
+Step 5: (Optional) Autostart on System Login
+Method A: Desktop Autostart (~/.config/autostart)
+
+Create ~/.config/autostart/pyconky.desktop:
+code Ini
+
+[Desktop Entry]
+Type=Application
+Name=PyConky
+Exec=/usr/bin/python3 /home/YOUR_USERNAME/pyconky/pyconky.py
+Hidden=false
+NoDisplay=false
+X-GNOME-Autostart-enabled=true
+Comment=PyConky Desktop Widget
+
+(Replace YOUR_USERNAME with your actual username)
+Method B: Systemd User Service
+
+    Create ~/.config/systemd/user/pyconky.service:
+    code Ini
+
+    [Unit]
+    Description=PyConky Desktop Widget
+    After=graphical-session.target
+
+    [Service]
+    Type=simple
+    ExecStart=/usr/bin/python3 %h/pyconky/pyconky.py
+    Restart=always
+    RestartSec=3
+
+    [Install]
+    WantedBy=graphical-session.target
+
+    Enable and start:
+    code Bash
+
+    systemctl --user daemon-reload
+    systemctl --user enable --now pyconky.service
