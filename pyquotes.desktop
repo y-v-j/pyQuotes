@@ -2,7 +2,8 @@
 Type=Application
 Name=pyQuotes
 Comment=Desktop widget with the time and a rotating literary quote
-Exec=sh -c '"$HOME/.local/share/pyquotes/launch.sh"'
+# "~", not "$HOME": systemd's autostart generator escapes "$", so sh would never expand it
+Exec=sh -c "exec ~/.local/share/pyquotes/launch.sh"
 Icon=accessories-text-editor
 Terminal=false
 Categories=Utility;

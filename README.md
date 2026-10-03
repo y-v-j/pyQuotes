@@ -257,6 +257,9 @@ No output means no Xft. Re-run `./install.sh` with conda/Miniforge installed, or
 **The widget doesn't start after I edited `quotes_data.py`.**
 A typo, such as a missing comma or an unclosed quote mark, makes the file invalid Python. Run `python3 ~/.local/share/pyquotes/quotes_data.py`; it prints the line with the error.
 
+**The widget doesn't start at login.**
+Run `systemctl --user status app-pyquotes@autostart.service`. If the log shows `$HOME/.local/share/pyquotes/launch.sh: No such file or directory`, your autostart entry comes from an older release whose `Exec=` line used `$HOME`. KDE Plasma and GNOME run autostart entries through systemd, which escapes the `$`, so the path is never expanded. Re-run `./install.sh`, or copy the current `pyquotes.desktop` to `~/.config/autostart/`.
+
 **The widget covers other windows.**
 The widget asks the window manager to keep it below other windows (`_NET_WM_STATE_BELOW`). This works on KWin and most EWMH-compliant window managers. Native Wayland compositors without XWayland aren't supported.
 
