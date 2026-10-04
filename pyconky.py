@@ -247,6 +247,12 @@ class X11Desktop:
                                                 ctypes.POINTER(ul), ctypes.POINTER(ci),
                                                 ctypes.POINTER(ul), ctypes.POINTER(ul),
                                                 ctypes.POINTER(vp)]
+            xlib.XDefaultScreen.argtypes = [vp]
+            xlib.XDisplayWidth.argtypes = [vp, ci]
+            xlib.XDisplayHeight.argtypes = [vp, ci]
+            # A dock can vanish between calls; never let Xlib exit on that
+            self._handler = ctypes.CFUNCTYPE(ci, vp, vp)(lambda d, e: 0)
+            xlib.XSetErrorHandler(self._handler)
             display = xlib.XOpenDisplay(None)
             if display:
                 self.ct, self.xlib, self.display = ctypes, xlib, display
@@ -268,26 +274,54 @@ class X11Desktop:
             self.xlib.XFree(children)
         return parent.value if parent.value and parent.value != root.value else inner
 
-    def workarea(self):
-        """(x, y, w, h) of the usable screen area excluding panels, or None."""
-        if not self.display:
-            return None
+    def _cardinals(self, window, prop, prop_type):
+        """A 32-bit property (CARDINAL, ATOM or WINDOW list) as a list of ints."""
         ct = self.ct
         actual_type, actual_format = ct.c_ulong(), ct.c_int()
         nitems, after, data = ct.c_ulong(), ct.c_ulong(), ct.c_void_p()
-        root = self.xlib.XDefaultRootWindow(self.display)
-        ok = self.xlib.XGetWindowProperty(self.display, root, self._atom("_NET_WORKAREA"), 0, 4,
-                                          0, 6, ct.byref(actual_type), ct.byref(actual_format),
+        ok = self.xlib.XGetWindowProperty(self.display, window, self._atom(prop), 0, 1024, 0, prop_type,
+                                          ct.byref(actual_type), ct.byref(actual_format),
                                           ct.byref(nitems), ct.byref(after), ct.byref(data))
         if ok != 0 or not data:
-            return None
+            return []
         try:
-            if actual_format.value != 32 or nitems.value < 4:
-                return None
-            vals = ct.cast(data, ct.POINTER(ct.c_long))
-            return tuple(int(vals[i]) for i in range(4))
+            if actual_format.value != 32:
+                return []
+            vals = ct.cast(data, ct.POINTER(ct.c_ulong))
+            return [int(vals[i]) for i in range(nitems.value)]
         finally:
             self.xlib.XFree(data)
+
+    def dock_struts(self):
+        """[left, right, top, bottom] pixels reserved by X11 docks such as polybar."""
+        out = [0, 0, 0, 0]
+        root = self.xlib.XDefaultRootWindow(self.display)
+        dock = self._atom("_NET_WM_WINDOW_TYPE_DOCK")
+        for w in self._cardinals(root, "_NET_CLIENT_LIST", 33):              # 33 = XA_WINDOW
+            if dock not in self._cardinals(w, "_NET_WM_WINDOW_TYPE", 4):      # 4 = XA_ATOM
+                continue
+            strut = (self._cardinals(w, "_NET_WM_STRUT_PARTIAL", 6)          # 6 = XA_CARDINAL
+                     or self._cardinals(w, "_NET_WM_STRUT", 6))
+            for i, v in enumerate(strut[:4]):
+                out[i] = max(out[i], v)
+        return out
+
+    def workarea(self):
+        """(x, y, w, h) of the usable screen area, or None: without panels, and
+        without X11 bars such as polybar, which KWin on Wayland leaves out."""
+        if not self.display:
+            return None
+        root = self.xlib.XDefaultRootWindow(self.display)
+        area = self._cardinals(root, "_NET_WORKAREA", 6)[:4]
+        if len(area) < 4:
+            return None
+        wx, wy, ww, wh = area
+        screen = self.xlib.XDefaultScreen(self.display)
+        sw, sh = self.xlib.XDisplayWidth(self.display, screen), self.xlib.XDisplayHeight(self.display, screen)
+        left, right, top, bottom = self.dock_struts()
+        x1, y1 = max(wx, left), max(wy, top)
+        x2, y2 = min(wx + ww, sw - right), min(wy + wh, sh - bottom)
+        return x1, y1, x2 - x1, y2 - y1
 
     def keep_on_desktop(self, inner_window_id):
         if not self.display:
@@ -336,6 +370,7 @@ class PyQuotes(tk.Tk):
         self.current_quote = self.deck.next(self.cfg.get("quote_max_chars", 300))
         self.height = 0
         self._rotate_job = None
+        self._area, self._ticks = None, 0
         self.x11 = X11Desktop()
 
         self.title("pyQuotes")
@@ -517,10 +552,23 @@ class PyQuotes(tk.Tk):
         try:
             if self.winfo_exists():
                 self.render()
+                self.follow_workarea()
         except Exception as e:
             sys.stderr.write(f"[pyQuotes Timer Error in tick]: {e}\n")
         finally:
             self.safe_after(1000, self.tick)
+
+    def follow_workarea(self):
+        """Every few seconds, move with the work area (e.g. when a bar such as
+        polybar starts, stops or resizes), unless the widget is being dragged."""
+        self._ticks = (self._ticks + 1) % 3
+        if self._ticks or self._drag_start:
+            return
+        area = self.x11.workarea()
+        if area != self._area:
+            self._area = area
+            if self.height:
+                self.position_window(self.height)
 
     def new_quote(self):
         try:

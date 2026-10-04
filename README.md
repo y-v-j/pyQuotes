@@ -16,6 +16,7 @@ A lightweight desktop widget for Linux that shows a greeting, the date and time,
 - **Rotating quotes:** 150+ literary quotes in [`quotes_data.py`](quotes_data.py). A new one appears every minute by default. Quotes are shuffled like a deck of cards: every quote is shown once before any repeats, and the deck's position is kept across restarts.
 - **Greeting and clock:** "Good morning / afternoon / evening, *name*", with a live clock and the date.
 - **Lives on the desktop:** stays below other windows, has no title bar or border, and doesn't appear in the taskbar, pager or Alt+Tab.
+- **Makes room for bars:** keeps below X11 bars such as [kBar](https://github.com/y-v-j/kBar) or another polybar, and moves back up when the bar stops. (KWin on Wayland doesn't reserve their space itself.)
 - **Polished look:** "Midnight Ink" theme (`#191926`), a rounded quote card, a gradient divider, and antialiased Fantasque Sans Mono Nerd Font text.
 - **Live configuration:** edits to `~/.config/pyconky/config.json` apply within two seconds, with no restart. That includes the quote interval.
 - **Right-click menu:** new quote, move the widget, toggle margins, edit or reload the config, quit.
@@ -184,7 +185,7 @@ Settings are stored at `~/.config/pyconky/config.json`, which is created on firs
 | `bg_opacity` | Window opacity, from `0.0` (invisible) to `1.0` (opaque) |
 | `show_margins` / `margin_size` | Outer padding on or off, and its size in pixels |
 | `corner` | `top-left`, `top-right`, `bottom-left` or `bottom-right` |
-| `offset_x` / `offset_y` | Distance from that corner, measured from the usable screen area (panels excluded). The default `offset_x: 450` leaves room for pySysMon |
+| `offset_x` / `offset_y` | Distance from that corner, measured from the usable screen area (panels and X11 bars such as kBar excluded). The default `offset_x: 450` leaves room for pySysMon |
 | `width` | Widget width in pixels. The height fits the quote automatically |
 | `quote_refresh_minutes` | Minutes between quotes. Decimals are allowed; the minimum is 5 seconds |
 | `quote_max_chars` | Quotes longer than this are skipped (all bundled quotes fit within the default 300) |
