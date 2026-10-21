@@ -1,0 +1,32 @@
+# GitHub Pages: README.md rendered with the Midnight Ink theme (_layouts/default.html).
+lang: en
+author: Yogesh
+tagline: "Clock and literary quotes desktop widget"
+nav:
+  - title: "Install"
+    url: "#installation"
+  - title: "Usage"
+    url: "#usage"
+  - title: "Config"
+    url: "#configuration"
+license_name: "MIT"
+copyright: "© 2026 Yogesh"
+defaults:
+  - scope:
+      path: ""
+    values:
+      image: /assets/screenshot.png
+exclude:   # setting this replaces Jekyll's defaults, so they are repeated here
+  - "index.html"
+  - ".sass-cache"
+  - ".jekyll-cache"
+  - "gemfiles"
+  - "Gemfile"
+  - "Gemfile.lock"
+  - "node_modules"
+  - "vendor/bundle/"
+  - "vendor/cache/"
+  - "vendor/gems/"
+  - "vendor/ruby/"
+plugins:
+  - jekyll-seo-tag
